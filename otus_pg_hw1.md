@@ -21,7 +21,7 @@ _sudo zypper in postgresql-plperl postgresql-plpython postgresql-pltcl_
 _sudo systemctl enable postgresql_
 _sudo systemctl start postgresql_
 
-**Переключиться на пользователя postgres. Используем подключение через сокет**
+**Переключиться на пользователя postgres. Используем подключение через Unix-domain сокет**
 
 _sudo su postgres_
 
