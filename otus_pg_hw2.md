@@ -1,11 +1,15 @@
-Сделать в GCE/ЯО/Аналоги инстанс с OpenSUSe Leap 15.3. 
+## OTUS PostgreSQL Cloud Solutions ##
+
+### Домашняя работа 2 ###
+
+**Сделать в GCE/ЯО/Аналоги инстанс с OpenSUSe Leap 15.3.** 
 
 ![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/1a2f642c-aa60-4cbf-8db0-7085a8ec777b)
 
-Поставить на нем Docker Engine
+**Поставить Docker Engine**
 
 Официально докер доступен для OpenSUSE Leap 15.3 и Tumbleweed
-Инсталлировал как написано в https://en.opensuse.org/Docker
+Инсталлироан как написано в https://en.opensuse.org/Docker
 Для openSUSE инсталлируется python3-docker-compose
 
 ```
@@ -15,8 +19,7 @@ uniadmin@endor-shire-dz2:~> sudo systemctl enable docker
 uniadmin@endor-shire-dz2:~> sudo usermod -G docker -a $USER
 uniadmin@endor-shire-dz2:~> sudo systemctl restart docker
 ```
-
-Проверить установку
+**Проверить установку**
 
 ```
 uniadmin@endor-shire-dz2:~> docker version
@@ -51,7 +54,7 @@ Version:          0.1.7_catatonit
 GitCommit: 
 ```
 
-Создать сеть для коммуникации между контейнерами.
+**Создать сеть для коммуникации между контейнерами.**
 
 ```
 uniadmin@endor-shire-dz2:~> docker network create \
@@ -64,7 +67,7 @@ uniadmin@endor-shire-dz2:~> docker network create \
 bf3b61615b9b1b156ec88687defb913869e902bc865d6ee8882067251cb39c5b
 ```
 
-Проверить, что сеть создана.
+**Убедится, что сеть создана.**
 
 ```
 uniadmin@endor-shire-dz2:~> docker network ls
@@ -73,12 +76,12 @@ NETWORK ID     NAME      DRIVER    SCOPE
 d5909104ef11   bridge    bridge    local 
 0b04a41ae318   host      host      local 
 560e4f57306f   none      null      local 
-bf3b61615b9b   pg_dz2    bridge    local
+bf3b61615b9b   pg_dz2    bridge    local * Созданная сеть
 
 uniadmin@endor-shire-dz2:~>
 ```
 
-Cделать каталог /var/lib/postgres
+**Cоздать каталог /var/lib/postgres**
 
 ```
 uniadmin@endor-shire-dz2:~> sudo mkdir /var/lib/postgres
@@ -91,15 +94,15 @@ drwxr-xr-x 25 root root 4096 May 29 14:09 ..
 uniadmin@endor-shire-dz2:~>
 ```
 
-Pазвернуть контейнер с PostgreSQL 14 смонтировав в него /var/lib/postgres
+**Pазвернуть контейнер с PostgreSQL 14 смонтировав в него /var/lib/postgres**
 
 ```
 uniadmin@endor-shire-dz2:~> docker pull postgres:14.8
 14.8: Pulling from library/postgres
-f03b40093957: Already exists # Связано с предыдущими установками docker.
-9d674c93414d: Already exists
-de781e8e259a: Already exists
-5ea6efaf51f6: Already exists
+f03b40093957: Already exists * Связано с предыдущими установками docker.
+9d674c93414d: Already exists 
+de781e8e259a: Already exists 
+5ea6efaf51f6: Already exists 
 b078d5f4ac82: Already exists
 97f84fb2a918: Already exists
 5a6bf2f43fb8: Already exists
@@ -114,7 +117,7 @@ Status: Downloaded newer image for postgres:14.8
 docker.io/library/postgres:14.8
 ```
 
-Проверить, что docker image pulled.
+**Убедится, что docker image pulled successfully.**
 
 ```
 uniadmin@endor-shire-dz2:~> docker images
@@ -125,12 +128,15 @@ postgres     14.8      ab8f641699b4   6 days ago   377MB
 uniadmin@endor-shire-dz2:~>
 ```
 
-Развернуть контейнер с клиентом postgres. Есть несколько вариантов:
+**Развернуть контейнер с клиентом postgres.**
+
+
+Есть несколько вариантов:
 
 1) Собрать свой docker image
-2) Использовать стороний docker image. docker search postgresl-client
+2) Использовать сторонний docker image. docker search postgresl-client
 3) Использовать текущий docker image, но тогда будет две базы.
-4) Использовать официальный docker image pgAdmin4 - выбран наиболее простой путь.
+4) Использовать официальный docker image pgAdmin4 - выбран для домашнего задания как наиболее простой путь.
 
 ```
 uniadmin@endor-shire-dz2:~> docker pull dpage/pgadmin4
@@ -160,9 +166,7 @@ docker.io/dpage/pgadmin4:latest
 uniadmin@endor-shire-dz2:~>
 ```
 
-Подключится из контейнера с клиентом к контейнеру с сервером и сделать таблицу с парой строк
-
-Запустить контейнер с Postgres
+**Подключится из контейнера с клиентом к контейнеру с сервером и сделать таблицу с парой строк.**
 
 ```
 docker run -itd \
@@ -175,7 +179,7 @@ docker run -itd \
 postgres:14.8
 ```
 
-Убедится, что  контейнер запущен.
+*Убедиться, что  контейнер запущен.*
 
 ```
 uniadmin@endor-shire-dz2:~> docker container ls
@@ -184,7 +188,7 @@ CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS  
 68a50787b490   postgres:14.8   "docker-entrypoint.s…"   7 seconds ago   Up 7 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres_dz2
 ```
 
-Убедится, что  PGDATA смотрит в подключённую директорию
+*Убедиться, что  PGDATA смотрит в подключённую директорию*
 
 ```
 uniadmin@endor-shire-dz2:~> sudo ls -latr /var/lib/postgres
@@ -220,10 +224,9 @@ drwx------  2  999  999  4096 May 29 20:31 pg_stat_tmp
 uniadmin@endor-shire-dz2:~>
 ```
 UID 999 GUID 999 - это UID пользователя postgres внутри контейнера. При инициализации БД, владельцем каталога /var/lib/postgresql/ 
-назначается пользователь postgres. Когда маппится каталог в текущий, то все рекурсивно будет принадлежать 999 UID'у. 
-Это логичное и ожидаемое поведение.
+назначается пользователь postgres. Когда монтируется каталог /var/lib/postgresв в контейнер как /var/lib/postgres/148_1/data, то все рекурсивно будет принадлежать 999 UID'у. Это логичное и ожидаемое поведение по версии Habr.
 
-Запустить контейнер с клиентом.
+*Запустить контейнер с клиентом.*
 
 ```
 uniadmin@endor-shire-dz2:~> docker run -p 80:80 \
@@ -236,7 +239,7 @@ uniadmin@endor-shire-dz2:~> docker run -p 80:80 \
 4b3522b6be5dd6356b3b9a5f12f1c36c94ea398017e4135cce7db04d790ee166
 ```
 
-Проверить, что  контейнер с клиентом запустился
+*Проверить, что  контейнер с клиентом запустился.*
 
 ```
 uniadmin@endor-shire-dz2:~> docker container ls
@@ -245,22 +248,21 @@ CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS
 68a50787b490   postgres:14.8    "docker-entrypoint.s…"   14 minutes ago   Up 14 minutes   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp    postgres_dz2
 uniadmin@endor-shire-dz2:~>
 ```
-
-Подключится из контейнера с клиентом к контейнеру с сервером и сделать таблицу с парой строк
+**Подключится из контейнера с клиентом к контейнеру с сервером и сделать таблицу с парой строк.**
 
 Из браузера на локальной машине http://62.84.115.193:80 - что не очень то безопасно :(
 
 ![pgadmin0](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/28f85a0f-bb23-4087-b50f-e77580de6932)
 
-Настроить соединение с контейнером БД 192.168.1.2 
+*Настроить соединение из контейнера pgAdmin4 с контейнером БД 192.168.1.2*
 
 ![pgadmin2](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/b8b82513-795b-47b0-9eca-e0321b82f33c)
 
-Создать БД stores. Создать таблицу t1 в схеме public.
+*Создать БД stores. Создать таблицу t1 в схеме public.*
 
 ![pgadmin4](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/3be40f47-c044-4fc4-a024-cf4573758f03)
-
-Подключится к контейнеру с сервером с ноутбука/компьютера извне инстансов GCP/ЯО/Аналоги
+.
+*Подключится к контейнеру с сервером с ноутбука/компьютера извне инстансов GCP/ЯО/Аналоги.*
 
 ```
 ftpbox1@localhost:~> psql -d postgres -h 62.84.115.193 -U postgres -W
@@ -283,7 +285,7 @@ a |          b           | c
 stores=#
 ```
 
-Удалить контейнер с сервером
+**Удалить контейнер с сервером.**
 
 ```
 uniadmin@endor-shire-dz2:~> docker container ls
@@ -304,7 +306,7 @@ CONTAINER ID   IMAGE            COMMAND            CREATED          STATUS      
 uniadmin@endor-shire-dz2:~>
 ```
 
-Проверить, что данные остались в смонтированной папке.
+**Проверить, что данные остались в смонтированной папке.**
 
 ```
 uniadmin@endor-shire-dz2:~> sudo ls -la /var/lib/postgres
@@ -338,7 +340,7 @@ drwx------  2  999  999  4096 May 29 20:15 pg_xact
 uniadmin@endor-shire-dz2:~>
 ```
 
-Создать контейнер заново
+**Создать контейнер заново.**
 
 ```
 uniadmin@endor-shire-dz2:~> docker run -itd \
@@ -360,15 +362,15 @@ CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS
 uniadmin@endor-shire-dz2:~>
 ```
 
-Подключиться из контейнера клиента к контейнеру серверу
+**Подключиться из контейнера клиента к контейнеру серверу.**
 
 ![pgadmin5](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/4ba4da20-64ab-469d-b063-e000a25eaeef)
 
-Выполнить запрос к таблице t1 из схемы public
+*Выполнить запрос к таблице t1 из схемы public.*
 
 ![pgadmin6](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/0bb28900-346b-4512-87a4-b626a86a6f4a)
 
-Подключится снова из контейнера с клиентом к контейнеру с сервером
+*Подключится снова из контейнера с клиентом к контейнеру с сервером.*
 
 ```
 ftpbox1@localhost:~> psql -d postgres -h 62.84.115.193 -U postgres -W
@@ -407,4 +409,4 @@ a |          b           | c
 stores=#
 ```
 
-Данные остались на месте...
+**Данные остались на месте...**
