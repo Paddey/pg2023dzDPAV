@@ -1,45 +1,59 @@
-Сделать в GCE/ЯО/Аналоги инстанс с Ubuntu 20.04 (OpenSUSe Leap 15.3)
+Сделать в GCE/ЯО/Аналоги инстанс с OpenSUSe Leap 15.3. 
 
-
+![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/1a2f642c-aa60-4cbf-8db0-7085a8ec777b)
 
 Поставить на нем Docker Engine
 
+Официально докер доступен для OpenSUSE Leap 15.3 и Tumbleweed
+Инсталлировал как написано в https://en.opensuse.org/Docker
+Для openSUSE инсталлируется python3-docker-compose
+
+```
 uniadmin@endor-shire-dz2:~> sudo zypper in docker
 uniadmin@endor-shire-dz2:~> sudo zypper in docker-compose 
 uniadmin@endor-shire-dz2:~> sudo systemctl enable docker
 uniadmin@endor-shire-dz2:~> sudo usermod -G docker -a $USER
 uniadmin@endor-shire-dz2:~> sudo systemctl restart docker
+```
+
+Проверить установку
+
+```
 uniadmin@endor-shire-dz2:~> docker version
 
-Client:
-Version:           20.10.17-ce
-API version:       1.41
-Go version:        go1.17.13
-Git commit:        a89b84221c85
-Built:             Wed Jun 29 12:00:00 2022
-OS/Arch:           linux/amd64
-Context:           default
-Experimental:      true
+Client: 
+Version:           20.10.17-ce 
+API version:       1.41 
+Go version:        go1.17.13 
+Git commit:        a89b84221c85 
+Built:             Wed Jun 29 12:00:00 2022 
+OS/Arch:           linux/amd64 
+Context:           default 
+Experimental:      true 
 
-Server:
-Engine:
-Version:          20.10.17-ce
-API version:      1.41 (minimum version 1.12)
-Go version:       go1.17.13
-Git commit:       a89b84221c85
-Built:            Wed Jun 29 12:00:00 2022
-OS/Arch:          linux/amd64
-Experimental:     false
-containerd:
-Version:          v1.6.12
-GitCommit:        a05d175400b1145e5e6a735a6710579d181e7fb0
-runc:
-Version:          1.1.4
-GitCommit:        v1.1.4-0-ga916309fff0f
-docker-init:
-Version:          0.1.7_catatonit
-GitCommit:
+Server: 
+Engine: 
+Version:          20.10.17-ce 
+API version:      1.41 (minimum version 1.12) 
+Go version:       go1.17.13 
+Git commit:       a89b84221c85 
+Built:            Wed Jun 29 12:00:00 2022 
+OS/Arch:          linux/amd64 
+Experimental:     false 
+containerd: 
+Version:          v1.6.12 
+GitCommit:        a05d175400b1145e5e6a735a6710579d181e7fb0 
+runc: 
+Version:          1.1.4 
+GitCommit:        v1.1.4-0-ga916309fff0f 
+docker-init: 
+Version:          0.1.7_catatonit 
+GitCommit: 
+```
 
+Создать сеть для коммуникации между контейнерами.
+
+```
 uniadmin@endor-shire-dz2:~> docker network create \
 > --driver=bridge \
 > --subnet=192.168.1.0/24 \
@@ -48,30 +62,41 @@ uniadmin@endor-shire-dz2:~> docker network create \
 > pg_dz2
 
 bf3b61615b9b1b156ec88687defb913869e902bc865d6ee8882067251cb39c5b
+```
 
+Проверить, что сеть создана.
+
+```
 uniadmin@endor-shire-dz2:~> docker network ls
-NETWORK ID     NAME      DRIVER    SCOPE
-d5909104ef11   bridge    bridge    local
-0b04a41ae318   host      host      local
-560e4f57306f   none      null      local
+
+NETWORK ID     NAME      DRIVER    SCOPE 
+d5909104ef11   bridge    bridge    local 
+0b04a41ae318   host      host      local 
+560e4f57306f   none      null      local 
 bf3b61615b9b   pg_dz2    bridge    local
+
 uniadmin@endor-shire-dz2:~>
+```
 
 Cделать каталог /var/lib/postgres
 
+```
 uniadmin@endor-shire-dz2:~> sudo mkdir /var/lib/postgres
 uniadmin@endor-shire-dz2:~> sudo ls -la /var/lib/postgres
+
 total 8
 drwxr-xr-x  2 root root 4096 May 29 14:09 .
 drwxr-xr-x 25 root root 4096 May 29 14:09 ..
+
 uniadmin@endor-shire-dz2:~>
+```
 
 Pазвернуть контейнер с PostgreSQL 14 смонтировав в него /var/lib/postgres
 
+```
 uniadmin@endor-shire-dz2:~> docker pull postgres:14.8
-
 14.8: Pulling from library/postgres
-f03b40093957: Already exists
+f03b40093957: Already exists # Связано с предыдущими установками docker.
 9d674c93414d: Already exists
 de781e8e259a: Already exists
 5ea6efaf51f6: Already exists
@@ -87,14 +112,27 @@ ff1099d10196: Pull complete
 Digest: sha256:af8b776d4b97636bc4844075d4d6e93df1eed120d4817cafda9000de24f1bd8a
 Status: Downloaded newer image for postgres:14.8
 docker.io/library/postgres:14.8
+```
 
+Проверить, что docker image pulled.
+
+```
 uniadmin@endor-shire-dz2:~> docker images
+
 REPOSITORY   TAG       IMAGE ID       CREATED      SIZE
 postgres     14.8      ab8f641699b4   6 days ago   377MB
+
 uniadmin@endor-shire-dz2:~>
+```
 
-Развернуть контейнер с клиентом postgres
+Развернуть контейнер с клиентом postgres. Есть несколько вариантов:
 
+1) Собрать свой docker image
+2) Использовать стороний docker image. docker search postgresl-client
+3) Использовать текущий docker image, но тогда будет две базы.
+4) Использовать официальный docker image pgAdmin4 - выбран наиболее простой путь.
+
+```
 uniadmin@endor-shire-dz2:~> docker pull dpage/pgadmin4
 Using default tag: latest
 latest: Pulling from dpage/pgadmin4
@@ -112,13 +150,21 @@ f77380753073: Pull complete
 16138b24ecdf: Pull complete
 8c35897ae279: Pull complete
 90864806e2cc: Pull complete
+
+
 Digest: sha256:c4f63d42fb10e31a797ea1bfde15cb6e601372b2c39da7429294bed5e70c84f8
+
 Status: Downloaded newer image for dpage/pgadmin4:latest
 docker.io/dpage/pgadmin4:latest
+
 uniadmin@endor-shire-dz2:~>
+```
 
 Подключится из контейнера с клиентом к контейнеру с сервером и сделать таблицу с парой строк
 
+Запустить контейнер с Postgres
+
+```
 docker run -itd \
 --name postgres_dz2 \
 --network=pg_dz2 \
@@ -127,12 +173,22 @@ docker run -itd \
 -v /var/lib/postgres:/var/lib/postgres/148_1/data \
 -p 5432:5432 \
 postgres:14.8
+```
 
+Убедится, что  контейнер запущен.
+
+```
 uniadmin@endor-shire-dz2:~> docker container ls
+
 CONTAINER ID   IMAGE           COMMAND                  CREATED         STATUS         PORTS                                       NAMES
 68a50787b490   postgres:14.8   "docker-entrypoint.s…"   7 seconds ago   Up 7 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres_dz2
+```
 
+Убедится, что  PGDATA смотрит в подключённую директорию
+
+```
 uniadmin@endor-shire-dz2:~> sudo ls -latr /var/lib/postgres
+
 total 136
 drwxr-xr-x 25 root root  4096 May 29 20:15 ..
 -rw-------  1  999  999     3 May 29 20:15 PG_VERSION
@@ -160,15 +216,16 @@ drwx------  2  999  999  4096 May 29 20:15 pg_stat
 drwx------  2  999  999  4096 May 29 20:16 global
 drwx------  4  999  999  4096 May 29 20:20 pg_logical
 drwx------  2  999  999  4096 May 29 20:31 pg_stat_tmp
+
 uniadmin@endor-shire-dz2:~>
+```
+UID 999 GUID 999 - это UID пользователя postgres внутри контейнера. При инициализации БД, владельцем каталога /var/lib/postgresql/ 
+назначается пользователь postgres. Когда маппится каталог в текущий, то все рекурсивно будет принадлежать 999 UID'у. 
+Это логичное и ожидаемое поведение.
 
-docker run -p 80:80 \
---name pgadmin_dz2 \
---network=pg_dz2 \
--e 'PGADMIN_DEFAULT_EMAIL=user@domain.com' \
--e 'PGADMIN_DEFAULT_PASSWORD=trendon' \
--d dpage/pgadmin4
+Запустить контейнер с клиентом.
 
+```
 uniadmin@endor-shire-dz2:~> docker run -p 80:80 \
 > --name pgadmin_dz2 \
 > --network=pg_dz2 \
@@ -177,15 +234,35 @@ uniadmin@endor-shire-dz2:~> docker run -p 80:80 \
 > -d dpage/pgadmin4
 
 4b3522b6be5dd6356b3b9a5f12f1c36c94ea398017e4135cce7db04d790ee166
+```
 
+Проверить, что  контейнер с клиентом запустился
+
+```
 uniadmin@endor-shire-dz2:~> docker container ls
 CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS          PORTS                                        NAMES
 4b3522b6be5d   dpage/pgadmin4   "/entrypoint.sh"         9 seconds ago    Up 8 seconds    0.0.0.0:80->80/tcp, :::80->80/tcp, 443/tcp   pgadmin_dz2
 68a50787b490   postgres:14.8    "docker-entrypoint.s…"   14 minutes ago   Up 14 minutes   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp    postgres_dz2
 uniadmin@endor-shire-dz2:~>
+```
+
+Подключится из контейнера с клиентом к контейнеру с сервером и сделать таблицу с парой строк
+
+Из браузера на локальной машине http://62.84.115.193:80 - что не очень то безопасно :(
+
+![pgadmin0](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/28f85a0f-bb23-4087-b50f-e77580de6932)
+
+Настроить соединение с контейнером БД 192.168.1.2 
+
+![pgadmin2](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/b8b82513-795b-47b0-9eca-e0321b82f33c)
+
+Создать БД stores. Создать таблицу t1 в схеме public.
+
+![pgadmin4](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/3be40f47-c044-4fc4-a024-cf4573758f03)
 
 Подключится к контейнеру с сервером с ноутбука/компьютера извне инстансов GCP/ЯО/Аналоги
 
+```
 ftpbox1@localhost:~> psql -d postgres -h 62.84.115.193 -U postgres -W
 Password:
 psql (15.2, server 14.8 (Debian 14.8-1.pgdg110+1))
@@ -204,9 +281,11 @@ a |          b           | c
 (3 rows)
 
 stores=#
+```
 
 Удалить контейнер с сервером
 
+```
 uniadmin@endor-shire-dz2:~> docker container ls
 CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS          PORTS                                        NAMES
 4b3522b6be5d   dpage/pgadmin4   "/entrypoint.sh"         20 minutes ago   Up 20 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp, 443/tcp   pgadmin_dz2
@@ -219,10 +298,15 @@ uniadmin@endor-shire-dz2:~> docker container rm  postgres_dz2
 postgres_dz2
 
 uniadmin@endor-shire-dz2:~> docker container ls
+
 CONTAINER ID   IMAGE            COMMAND            CREATED          STATUS          PORTS                                        NAMES
 4b3522b6be5d   dpage/pgadmin4   "/entrypoint.sh"   22 minutes ago   Up 22 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp, 443/tcp   pgadmin_dz2
 uniadmin@endor-shire-dz2:~>
+```
 
+Проверить, что данные остались в смонтированной папке.
+
+```
 uniadmin@endor-shire-dz2:~> sudo ls -la /var/lib/postgres
 total 132
 drwx------ 19  999 root  4096 May 29 20:50 .
@@ -252,10 +336,11 @@ drwx------  2  999  999  4096 May 29 20:15 pg_xact
 -rw-------  1  999  999    36 May 29 20:15 postmaster.opts
 
 uniadmin@endor-shire-dz2:~>
+```
 
+Создать контейнер заново
 
-Создать его заново
-
+```
 uniadmin@endor-shire-dz2:~> docker run -itd \
 > --name postgres_dz2 \
 > --network=pg_dz2 \
@@ -273,9 +358,19 @@ CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS
 4b3522b6be5d   dpage/pgadmin4   "/entrypoint.sh"         25 minutes ago   Up 25 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp, 443/tcp   pgadmin_dz2
 
 uniadmin@endor-shire-dz2:~>
+```
+
+Подключиться из контейнера клиента к контейнеру серверу
+
+![pgadmin5](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/4ba4da20-64ab-469d-b063-e000a25eaeef)
+
+Выполнить запрос к таблице t1 из схемы public
+
+![pgadmin6](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/0bb28900-346b-4512-87a4-b626a86a6f4a)
 
 Подключится снова из контейнера с клиентом к контейнеру с сервером
 
+```
 ftpbox1@localhost:~> psql -d postgres -h 62.84.115.193 -U postgres -W
 Password:
 psql (15.2, server 14.8 (Debian 14.8-1.pgdg110+1))
@@ -310,19 +405,6 @@ a |          b           | c
 (3 rows)
 
 stores=#
+```
 
-
-
-Проверить, что данные остались на месте
-
-
-Оставляйте в ЛК ДЗ комментарии что и как вы делали и как боролись с проблемами
-
-
-ssh -i ./id_rsa.pub   uniadmin@62.84.115.193
-zypper in docker
-zypper in docker-compose 
-
-Open Suse использует python3-docker-compose
-
-mkdir /var/lib/postgres
+Данные остались на месте...
