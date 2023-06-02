@@ -1,13 +1,13 @@
-OTUS PostgreSQL Cloud Solutions
+## OTUS PostgreSQL Cloud Solutions ##
 
-Домашняя работа 3
+### Домашняя работа 3 ###
 
-Сделать в GCE/ЯО/Аналоги инстанс с OpenSUSe Leap 15.4
+**Сделать инстанс с OpenSUSe Leap 15.4**
 
 ![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/2c30e992-1283-4ba4-9ba4-275bc80b7b4b)
 
 
-Поставить на нее PostgreSQL 15 
+**Поставить PostgreSQL 15**
 
 https://en.opensuse.org/SDB:PostgreSQL
 
@@ -50,7 +50,7 @@ All repositories have been refreshed.
 uniadmin@endor-shire-dz3:~>
 ```
 
-Проверить что кластер запущен
+**Проверить что кластер запущен.**
 
 ```
 uniadmin@endor-shire-dz3:~> sudo systemctl status postgresql
@@ -68,7 +68,7 @@ CGroup: /system.slice/postgresql.service
 ├─2275 postgres: walwriter
 ```
 
-Из под пользователя postgres в psql и сделайть произвольную таблицу с произвольным содержимым
+**Из под пользователя postgres в psql сделать произвольную таблицу с произвольным содержимым**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo su postgres
@@ -101,7 +101,7 @@ a |          b           |     c
 postgres=#
 ```
 
-Остановить postgres
+**Остановить postgres.**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl stop postgresql
@@ -117,10 +117,10 @@ Process: 1551 ExecStop=/usr/share/postgresql/postgresql-script stop (code=exited
 Main PID: 1386 (code=exited, status=0/SUCCESS)
 ```
 
-Создать новый standard persistent диск GKE через Compute Engine -> Disks в том же регионе и зоне что GCE инстанс 
+**Создать новый standard persistent диск GKE через Compute Engine -> Disks в том же регионе и зоне что GCE инстанс 
 размером например 10GB - или аналог в другом облаке/виртуализации.
 Добавить свеже-созданный диск к виртуальной машине - надо зайти в режим ее редактирования и 
-дальше выбрать пункт attach existing disk
+дальше выбрать пункт attach existing disk.**
 
 ![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/309a1ef0-6702-45c3-902b-bcc1715c3c09)
 
@@ -134,7 +134,7 @@ vdb    254:16   0  10G  0 disk
 uniadmin@fhmo8heg5f5s5htvi4v7:~>
 ```
 
-Проинициализировать диск и подмонтировать файловую систему, 
+**Проинициализировать диск и подмонтировать файловую систему.**
 
 ```
 uniadmin@endor-shire-dz3:~> sudo yast partitioner
@@ -153,7 +153,7 @@ vdb    254:16   0  10G  0 disk
 uniadmin@fhmo8heg5f5s5htvi4v7:~>
 ```
 
-Перезагрузить инстанс и убедится, что диск остается примонтированным.
+**Перезагрузить инстанс и убедится, что диск остается примонтированным.**
 
 Перезапуск виртуальной машины.
 
@@ -173,14 +173,15 @@ UUID=443499dc-8a2a-45d9-ac3f-ce1dd6d653ef  /mnt/data  xfs   defaults        0  0
 uniadmin@fhmo8heg5f5s5htvi4v7:~>
 ```
 
-Cделайть пользователя postgres владельцем /mnt/data - chown -R postgres:postgres /mnt/data/
+**Cделать пользователя postgres владельцем /mnt/data/15_1.**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo chown -R postgres:postgres /mnt/data/15_1
 ```
 
-Перенести содержимое /var/lib/pgsql/ в /mnt/data/15_1
-Использовался MC и клавиша F6
+**Перенести содержимое /var/lib/pgsql/ в /mnt/data/15_1.**
+
+Использовался 'Midnight Commander' и клавиша F6
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data/15_1> sudo ls -la /var/lib/pgsql
@@ -224,7 +225,7 @@ drwx------  2 postgres postgres    18 Jun  2 00:01 pg_xact
 -rw-------  1 postgres postgres    62 Jun  2 11:04 postmaster.opts
 ```
 
-Запустить кластер Postgres
+**Запустить кластер Postgres.**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl start postgresql
@@ -253,10 +254,6 @@ postgres@fhmo8heg5f5s5htvi4v7:/home/uniadmin> psql
 psql (15.3)
 Type "help" for help.
 
-postgres=# select * frpom test1;
-ERROR:  syntax error at or near "frpom"
-LINE 1: select * frpom test1;
-^
 postgres=# select * from test1;
 ERROR:  relation "test1" does not exist
 LINE 1: select * from test1;
@@ -264,10 +261,11 @@ LINE 1: select * from test1;
 postgres=#
 ```
 
-Получилось или нет запустить кластер.
+**Получилось или нет запустить кластер.**
+
 Запустить сервис получилось, но видимо это не тот кластер а новый, **переинициализированный.**
 
-Найти конфигурационный параметр который надо поменять и поменять его.
+**Найти конфигурационный параметр который надо поменять и поменять его.**
 
 Для настройки сервиса postgresql на новую $PGDATA меняем следующие параметры в файле: **/etc/sysconfig/postgresql**
 
@@ -275,7 +273,7 @@ POSTGRES_DATADIR="/mnt/data/15_1"
 
 #POSTGRES_INITDB_OPTS="--auth=ident" <- Данную строку необходимо закомментировать иначе кластер БД переинициализируется если не найдёт новый каталог с $PGDATA
 
-Запустить кластер
+**Запустить кластер.**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo systemctl start postgresql
@@ -297,7 +295,6 @@ Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 systemd[1]: postgresql.service: Control pro
 Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 systemd[1]: postgresql.service: Failed with result 'exit-code'.
 Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 systemd[1]: Failed to start PostgreSQL database server.
 
-
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data/15_1> sudo chmod 0750 /mnt/data/15_1
 
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> ls -la
@@ -307,6 +304,7 @@ drwxr-xr-x  3 postgres postgres 4096 Jun  1 23:44 ..
 drwxr-x--- 20 postgres postgres 4096 Jun  2 15:03 15_1
 
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo systemctl start postgresql
+
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> systemctl status postgresql.service
 ● postgresql.service - PostgreSQL database server
 Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; vendor preset: disabled)
@@ -325,9 +323,11 @@ CGroup: /system.slice/postgresql.service
 ├─ 4698 "postgres: autovacuum launcher " "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
 └─ 4699 "postgres: logical replication launcher " "" "" "" "" "" "" "" "" "" "" "" "" ""
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data>
+```
 
-Зайти через через psql и проверить содержимое ранее созданной таблицы
+**Зайти через через psql и проверить содержимое ранее созданной таблицы.**
 
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo su postgres
 
 postgres@fhmo8heg5f5s5htvi4v7:/mnt/data> psql
@@ -349,8 +349,12 @@ data_directory
 ----------------
 /mnt/data/15_1
 (1 row)
+```
 
-17.задание со звездочкой *: не удаляя существующий GCE инстанс/ЯО сделайте новый, поставьте на его PostgreSQL, 
+
+**Задание со звездочкой \*: не удаляя существующий GCE инстанс/ЯО сделайте новый, поставьте на его PostgreSQL, 
 удалите файлы с данными из /var/lib/postgresql, перемонтируйте внешний диск который сделали ранее от 
 первой виртуальной машины ко второй и запустите PostgreSQL на второй машине так чтобы он работал с 
-данными на внешнем диске, расскажите как вы это сделали и что в итоге получилось.
+данными на внешнем диске, расскажите как вы это сделали и что в итоге получилось.**
+
+
