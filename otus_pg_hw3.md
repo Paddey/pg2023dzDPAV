@@ -1,10 +1,19 @@
-1.создайте виртуальную машину c Ubuntu 20.04 LTS (bionic) в GCE типа e2-medium в default VPC в любом регионе и зоне, например us-central1-a или ЯО/VirtualBox
+OTUS PostgreSQL Cloud Solutions
 
-ssh_keygen -t rsa -b 2048
+Домашняя работа 3
 
-2.поставьте на нее PostgreSQL 15 через sudo apt
+Сделать в GCE/ЯО/Аналоги инстанс с OpenSUSe Leap 15.4
 
+![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/2c30e992-1283-4ba4-9ba4-275bc80b7b4b)
+
+
+Поставить на нее PostgreSQL 15 
+
+https://en.opensuse.org/SDB:PostgreSQL
+
+```
 zypper --non-interactive --quiet addrepo --refresh -p 90  http://download.opensuse.org/repositories/server:database:postgresql/openSUSE_Tumbleweed/ PostgreSQL
+
 uniadmin@endor-shire-dz3:~> sudo zypper --non-interactive --quiet addrepo --refresh -p 90  http://download.opensuse.org/repositories/server:database:postgresql/openSUSE_Tumbleweed/ PostgreSQL
 90 (raised priority)  :  1 repository
 99 (default priority) :  5 repositories
@@ -39,9 +48,11 @@ Repository 'Update repository with updates from SUSE Linux Enterprise 15' is up 
 Repository 'repo-update-non-oss' is up to date.
 All repositories have been refreshed.
 uniadmin@endor-shire-dz3:~>
+```
 
-3.проверьте что кластер запущен
+Проверить что кластер запущен
 
+```
 uniadmin@endor-shire-dz3:~> sudo systemctl status postgresql
 ● postgresql.service - PostgreSQL database server
 Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; vendor preset: disabled)
@@ -55,10 +66,11 @@ CGroup: /system.slice/postgresql.service
 ├─2272 postgres: checkpointer
 ├─2273 postgres: background writer
 ├─2275 postgres: walwriter
+```
 
+Из под пользователя postgres в psql и сделайть произвольную таблицу с произвольным содержимым
 
-4.зайдите из под пользователя postgres в psql и сделайте произвольную таблицу с произвольным содержимым
-
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo su postgres
 postgres@fhmo8heg5f5s5htvi4v7:/home/uniadmin> psql
 psql (15.3)
@@ -87,11 +99,13 @@ a |          b           |     c
 (3 rows)
 
 postgres=#
+```
 
+Остановить postgres
 
-5.остановите postgres
-
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl stop postgresql
+
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl status postgresql
 ○ postgresql.service - PostgreSQL database server
 Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; vendor preset: disabled)
@@ -101,16 +115,16 @@ Active: inactive (dead) since Fri 2023-06-02 11:11:17 MSK; 10s ago
 Process: 1376 ExecStart=/usr/share/postgresql/postgresql-script start (code=exited, status=0/SUCCESS)
 Process: 1551 ExecStop=/usr/share/postgresql/postgresql-script stop (code=exited, status=0/SUCCESS)
 Main PID: 1386 (code=exited, status=0/SUCCESS)
+```
 
-
-6.создайте новый standard persistent диск GKE через Compute Engine -> Disks в том же регионе и зоне что GCE инстанс 
-размером например 10GB - или аналог в другом облаке/виртуализации
-
-
-
-7.добавьте свеже-созданный диск к виртуальной машине - надо зайти в режим ее редактирования и 
+Создать новый standard persistent диск GKE через Compute Engine -> Disks в том же регионе и зоне что GCE инстанс 
+размером например 10GB - или аналог в другом облаке/виртуализации.
+Добавить свеже-созданный диск к виртуальной машине - надо зайти в режим ее редактирования и 
 дальше выбрать пункт attach existing disk
 
+![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/309a1ef0-6702-45c3-902b-bcc1715c3c09)
+
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> lsblk
 NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
 vda    254:0    0  15G  0 disk
@@ -118,16 +132,16 @@ vda    254:0    0  15G  0 disk
 └─vda2 254:2    0  15G  0 part /
 vdb    254:16   0  10G  0 disk
 uniadmin@fhmo8heg5f5s5htvi4v7:~>
+```
 
+Проинициализировать диск и подмонтировать файловую систему, 
 
-8.проинициализируйте диск согласно инструкции и подмонтировать файловую систему, 
-только не забывайте менять имя диска на актуальное, в вашем случае это скорее всего будет 
-/dev/sdb - https://www.digitalocean.com/community/tutorials/how-to-partition-and-format-storage-devices-in-linux
-
+```
 uniadmin@endor-shire-dz3:~> sudo yast partitioner
-Используем предложенный GUI для создания раздела на диске.
+Используется предложенный GUI для создания раздела на диске.
 
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo yast partitioner
+
 uniadmin@fhmo8heg5f5s5htvi4v7:~> lsblk
 NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
 vda    254:0    0  15G  0 disk
@@ -137,12 +151,13 @@ vdb    254:16   0  10G  0 disk
 └─vdb1 254:17   0  10G  0 part /mnt/data
 
 uniadmin@fhmo8heg5f5s5htvi4v7:~>
+```
 
+Перезагрузить инстанс и убедится, что диск остается примонтированным.
 
-9.перезагрузите инстанс и убедитесь, что диск остается примонтированным (если не так смотрим в сторону fstab)
+Перезапуск виртуальной машины.
 
-Перезапускаем виртуальную машину.
-
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> lsblk
 NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
 vda    254:0    0  15G  0 disk            
@@ -150,16 +165,24 @@ vda    254:0    0  15G  0 disk
 └─vda2 254:2    0  15G  0 part /          
 vdb    254:16   0  10G  0 disk            
 └─vdb1 254:17   0  10G  0 part /mnt/data  
+
 uniadmin@fhmo8heg5f5s5htvi4v7:~> cat /etc/fstab
 UUID=c0ccac5a-80dd-4b1d-8d69-07b06bd139a4  /          ext4  acl,user_xattr  0  1
 UUID=443499dc-8a2a-45d9-ac3f-ce1dd6d653ef  /mnt/data  xfs   defaults        0  0
+
 uniadmin@fhmo8heg5f5s5htvi4v7:~>
+```
 
-10.сделайте пользователя postgres владельцем /mnt/data - chown -R postgres:postgres /mnt/data/
+Cделайть пользователя postgres владельцем /mnt/data - chown -R postgres:postgres /mnt/data/
 
+```
+uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo chown -R postgres:postgres /mnt/data/15_1
+```
 
-11.перенесите содержимое /var/lib/postgresql/15 в /mnt/data - mv /var/lib/postgresql/15 /mnt/data
+Перенести содержимое /var/lib/pgsql/ в /mnt/data/15_1
+Использовался MC и клавиша F6
 
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data/15_1> sudo ls -la /var/lib/pgsql
 total 28
 drwxr-x---  2 postgres postgres 4096 Jun  2 11:18 .
@@ -199,10 +222,13 @@ drwx------  2 postgres postgres    18 Jun  2 00:01 pg_xact
 -rw-------  1 postgres postgres    88 Jun  2 00:01 postgresql.auto.conf
 -rw-------  1 postgres postgres 29515 Jun  2 00:01 postgresql.conf
 -rw-------  1 postgres postgres    62 Jun  2 11:04 postmaster.opts
+```
 
-12.попытайтесь запустить кластер - sudo -u postgres pg_ctlcluster 15 main start
+Запустить кластер Postgres
 
+```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl start postgresql
+
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl status postgresql
 ● postgresql.service - PostgreSQL database server
 Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; vendor preset: disabled)
@@ -222,6 +248,7 @@ CGroup: /system.slice/postgresql.service
 └─ 1827 "postgres: logical replication launcher " "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" ""
 
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo su postgres
+
 postgres@fhmo8heg5f5s5htvi4v7:/home/uniadmin> psql
 psql (15.3)
 Type "help" for help.
@@ -235,26 +262,26 @@ ERROR:  relation "test1" does not exist
 LINE 1: select * from test1;
 ^
 postgres=#
+```
 
-13.напишите получилось или нет и почему
+Получилось или нет запустить кластер.
+Запустить сервис получилось, но видимо это не тот кластер а новый, **переинициализированный.**
 
-Запустить сервис получилось, но видимо это не тот кластер а новый, переинициализированный.
+Найти конфигурационный параметр который надо поменять и поменять его.
 
-
-14.задание: найти конфигурационный параметр в файлах раположенных в /etc/postgresql/15/main который надо поменять и поменяйте его
-напишите что и почему поменяли
-
-Для настройки сервиса postgresql на новую $PGDATA меняем следующие параметры в файле:
-
-/etc/sysconfig/postgresql
+Для настройки сервиса postgresql на новую $PGDATA меняем следующие параметры в файле: **/etc/sysconfig/postgresql**
 
 POSTGRES_DATADIR="/mnt/data/15_1"
-#POSTGRES_INITDB_OPTS="--auth=ident"
 
-15.попытайтесь запустить кластер 
-напишите получилось или нет и почему
+#POSTGRES_INITDB_OPTS="--auth=ident" <- Данную строку необходимо закомментировать иначе кластер БД переинициализируется если не найдёт новый каталог с $PGDATA
 
-postgresql.service - PostgreSQL database server
+Запустить кластер
+
+```
+uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo systemctl start postgresql
+uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo systemctl status postgresql
+
+* postgresql.service - PostgreSQL database server
 Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; vendor preset: disabled)
 Drop-In: /etc/systemd/system/postgresql.service.d
 └─override.conf
@@ -269,15 +296,17 @@ Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 postgresql-script[4666]: Examine the log ou
 Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 systemd[1]: postgresql.service: Control process exited, code=exited, status=1/FAILURE
 Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 systemd[1]: postgresql.service: Failed with result 'exit-code'.
 Jun 02 15:12:49 fhmo8heg5f5s5htvi4v7 systemd[1]: Failed to start PostgreSQL database server.
-~
+
 
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data/15_1> sudo chmod 0750 /mnt/data/15_1
+
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> ls -la
 total 8
 drwxr-xr-x  3 postgres postgres   18 Jun  2 11:14 .
 drwxr-xr-x  3 postgres postgres 4096 Jun  1 23:44 ..
 drwxr-x--- 20 postgres postgres 4096 Jun  2 15:03 15_1
 
+uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo systemctl start postgresql
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> systemctl status postgresql.service
 ● postgresql.service - PostgreSQL database server
 Loaded: loaded (/usr/lib/systemd/system/postgresql.service; enabled; vendor preset: disabled)
@@ -297,9 +326,10 @@ CGroup: /system.slice/postgresql.service
 └─ 4699 "postgres: logical replication launcher " "" "" "" "" "" "" "" "" "" "" "" "" ""
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data>
 
-16.зайдите через через psql и проверьте содержимое ранее созданной таблицы
+Зайти через через psql и проверить содержимое ранее созданной таблицы
 
 uniadmin@fhmo8heg5f5s5htvi4v7:/mnt/data> sudo su postgres
+
 postgres@fhmo8heg5f5s5htvi4v7:/mnt/data> psql
 psql (15.3)
 Type "help" for help.
