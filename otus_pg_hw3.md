@@ -439,6 +439,7 @@ uniadmin@endor-shire1-dz3:/etc/sysconfig> cd ~
 
 **Запустить кластер PostgreSQL.**
 
+```
 uniadmin@endor-shire1-dz3:~> sudo systemctl start postgresql
 
 uniadmin@endor-shire1-dz3:~> sudo systemctl status postgresql
@@ -463,9 +464,11 @@ Jun 02 16:46:07 endor-shire1-dz3 postgresql-script[8012]: 2023-06-02 16:46:07.39
 Jun 02 16:46:07 endor-shire1-dz3 systemd[1]: Started PostgreSQL database server.       
 
 uniadmin@endor-shire1-dz3:~>
+```
 
 **Проверить таблицу в БД.**
 
+```
 uniadmin@endor-shire1-dz3:~> sudo su postgres
 
 postgres@endor-shire1-dz3:/home/uniadmin> psql
@@ -487,5 +490,5 @@ data_directory
 (1 row)
 
 postgres=#
-
+```
 
