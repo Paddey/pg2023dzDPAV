@@ -7,13 +7,13 @@
 ![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/2c30e992-1283-4ba4-9ba4-275bc80b7b4b)
 
 
-**Поставить PostgreSQL 15**
+**Инсталлировать PostgreSQL 15**
+
+Для запуска и управления кластером PostgreSQL выбран systemd
 
 https://en.opensuse.org/SDB:PostgreSQL
 
 ```
-zypper --non-interactive --quiet addrepo --refresh -p 90  http://download.opensuse.org/repositories/server:database:postgresql/openSUSE_Tumbleweed/ PostgreSQL
-
 uniadmin@endor-shire-dz3:~> sudo zypper --non-interactive --quiet addrepo --refresh -p 90  http://download.opensuse.org/repositories/server:database:postgresql/openSUSE_Tumbleweed/ PostgreSQL
 90 (raised priority)  :  1 repository
 99 (default priority) :  5 repositories
@@ -47,7 +47,11 @@ Repository 'Update repository of openSUSE Backports' is up to date.
 Repository 'Update repository with updates from SUSE Linux Enterprise 15' is up to date.
 Repository 'repo-update-non-oss' is up to date.
 All repositories have been refreshed.
-uniadmin@endor-shire-dz3:~>
+
+uniadmin@endor-shire-dz3:~> sudo zypper in postgresql postgresql-server postgresql-contrib
+
+uniadmin@endor-shire-dz3:~> sudo zypper in postgresql-plperl postgresql-plpython postgresql-pltcl
+
 ```
 
 **Проверить что кластер запущен.**
@@ -72,6 +76,7 @@ CGroup: /system.slice/postgresql.service
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo su postgres
+
 postgres@fhmo8heg5f5s5htvi4v7:/home/uniadmin> psql
 psql (15.3)
 Type "help" for help.
@@ -101,7 +106,7 @@ a |          b           |     c
 postgres=#
 ```
 
-**Остановить postgres.**
+**Остановить PostgreSQL.**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl stop postgresql
@@ -225,7 +230,7 @@ drwx------  2 postgres postgres    18 Jun  2 00:01 pg_xact
 -rw-------  1 postgres postgres    62 Jun  2 11:04 postmaster.opts
 ```
 
-**Запустить кластер Postgres.**
+**Запустить кластер PostgreSQL.**
 
 ```
 uniadmin@fhmo8heg5f5s5htvi4v7:~> sudo systemctl start postgresql
@@ -263,11 +268,11 @@ postgres=#
 
 **Получилось или нет запустить кластер.**
 
-Запустить сервис получилось, но видимо это не тот кластер а новый, **переинициализированный.**
+Запустить кластер получилось, но видимо это не тот кластер а новый, **переинициализированный.**
 
 **Найти конфигурационный параметр который надо поменять и поменять его.**
 
-Для настройки сервиса postgresql на новую $PGDATA меняем следующие параметры в файле: **/etc/sysconfig/postgresql**
+Для настройки сервиса postgresql на новую PGDATA меняем следующие параметры в файле: **/etc/sysconfig/postgresql**
 
 POSTGRES_DATADIR="/mnt/data/15_1"
 
@@ -356,5 +361,131 @@ data_directory
 удалите файлы с данными из /var/lib/postgresql, перемонтируйте внешний диск который сделали ранее от 
 первой виртуальной машины ко второй и запустите PostgreSQL на второй машине так чтобы он работал с 
 данными на внешнем диске, расскажите как вы это сделали и что в итоге получилось.**
+
+**Инсталлировать PostgreSQL.**
+
+```
+uniadmin@endor-shire-dz3:~> sudo zypper --non-interactive --quiet addrepo --refresh -p 90  http://download.opensuse.org/repositories/server:database:postgresql/openSUSE_Tumbleweed/ PostgreSQL
+
+uniadmin@endor-shire-dz3:~> sudo zypper refresh
+
+uniadmin@endor-shire-dz3:~> sudo zypper in postgresql postgresql-server postgresql-contrib
+
+uniadmin@endor-shire-dz3:~> sudo zypper in postgresql-plperl postgresql-plpython postgresql-pltcl
+```
+
+Подключить диск
+
+![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/001bc9a1-dcf2-4f29-a88b-8c9769d4846e)
+
+Подключить диск в ОС
+
+```
+uniadmin@endor-shire1-dz3:~> sudo mkdir /mnt/data
+
+uniadmin@endor-shire1-dz3:~> sudo mount /dev/vdb1 /mnt/data/
+
+uniadmin@endor-shire1-dz3:~> sudo ls -la /mnt/data
+total 8
+drwxr-xr-x  3 postgres postgres   18 Jun  2 11:14 .
+drwxr-xr-x  3 root     root     4096 Jun  2 16:39 ..
+drwxr-x--- 20 postgres postgres 4096 Jun  2 16:33 15_1
+
+uniadmin@endor-shire1-dz3:~> sudo chown -R postgres:postgres /mnt/data
+
+uniadmin@endor-shire1-dz3:~> ls -la /mnt/data
+total 8
+drwxr-xr-x  3 postgres postgres   18 Jun  2 11:14 .
+drwxr-xr-x  3 root     root     4096 Jun  2 16:39 ..
+drwxr-x--- 20 postgres postgres 4096 Jun  2 16:33 15_1
+
+uniadmin@endor-shire1-dz3:~> sudo blkid
+/dev/vda2: UUID="c0ccac5a-80dd-4b1d-8d69-07b06bd139a4" BLOCK_SIZE="4096" TYPE="ext4" PT
+TYPE="dos" PARTUUID="0f239dfc-1521-49d9-b1f5-caced758a471"
+/dev/vdb1: UUID="443499dc-8a2a-45d9-ac3f-ce1dd6d653ef" BLOCK_SIZE="4096" TYPE="xfs" PAR
+TUUID="287661d7-62b3-4c30-90f0-e60640d663ea"
+/dev/vda1: PARTUUID="01abf8c1-9b92-4ea8-ad2c-b3204f345cfc"
+
+uniadmin@endor-shire1-dz3:~> sudo vi /etc/fstab
+
+uniadmin@endor-shire1-dz3:~> sudo mount -a
+  
+uniadmin@endor-shire1-dz3:~> lsblk                         
+NAME   MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
+vda    254:0    0  15G  0 disk            
+├─vda1 254:1    0   4M  0 part            
+└─vda2 254:2    0  15G  0 part /          
+vdb    254:16   0  10G  0 disk            
+└─vdb1 254:17   0  10G  0 part /mnt/data  
+
+uniadmin@endor-shire1-dz3:~> ls -la /mnt/data
+total 8                                               
+drwxr-xr-x  3 postgres postgres   18 Jun  2 11:14 .   
+drwxr-xr-x  3 root     root     4096 Jun  2 16:39 ..  
+drwxr-x--- 20 postgres postgres 4096 Jun  2 16:33 15_1
+uniadmin@endor-shire1-dz3:~>                          
+```
+
+**Исправить переменные окружения для PostgreSQL в */etc/sysconfig/postgresql***
+
+```
+uniadmin@endor-shire1-dz3:/etc/sysconfig> sudo vi /etc/sysconfig/postgresql
+
+POSTGRES_DATADIR="/mnt/data/15_1"
+#POSTGRES_INITDB_OPTS="--auth=ident" <- Данную строку необходимо закомментировать иначе кластер БД переинициализируется если не найдёт новый каталог с PGDATA
+
+uniadmin@endor-shire1-dz3:/etc/sysconfig> cd ~
+```
+
+**Запустить кластер PostgreSQL.**
+
+uniadmin@endor-shire1-dz3:~> sudo systemctl start postgresql
+
+uniadmin@endor-shire1-dz3:~> sudo systemctl status postgresql
+● postgresql.service - PostgreSQL database server
+Loaded: loaded (/usr/lib/systemd/system/postgresql.service; disabled; vendor pres>
+Active: active (running) since Fri 2023-06-02 16:46:07 MSK; 10s ago
+Process: 8002 ExecStart=/usr/share/postgresql/postgresql-script start (code=exited>
+Main PID: 8012 (postgres)
+Tasks: 7 (limit: 4915)
+CGroup: /system.slice/postgresql.service
+├─ 8012 /usr/lib/postgresql15/bin/postgres -D /mnt/data/15_1
+├─ 8013 "postgres: logger " "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" >
+├─ 8014 "postgres: checkpointer " "" "" "" "" "" "" "" "" "" "" "" "" "" >
+├─ 8015 "postgres: background writer " "" "" "" "" "" "" "" "" "" "" "" ">
+├─ 8017 "postgres: walwriter " "" "" "" "" "" "" "" "" "" "" "" "" "" "" >
+├─ 8018 "postgres: autovacuum launcher " "" "" "" "" "" "" "" "" "" "" "">
+└─ 8019 "postgres: logical replication launcher " "" "" "" "" "" "" "" "">
+
+Jun 02 16:46:07 endor-shire1-dz3 systemd[1]: Starting PostgreSQL database server...    
+Jun 02 16:46:07 endor-shire1-dz3 postgresql-script[8012]: 2023-06-02 16:46:07.398 MSK >
+Jun 02 16:46:07 endor-shire1-dz3 postgresql-script[8012]: 2023-06-02 16:46:07.398 MSK >
+Jun 02 16:46:07 endor-shire1-dz3 systemd[1]: Started PostgreSQL database server.       
+
+uniadmin@endor-shire1-dz3:~>
+
+**Проверить таблицу в БД.**
+
+uniadmin@endor-shire1-dz3:~> sudo su postgres
+
+postgres@endor-shire1-dz3:/home/uniadmin> psql
+psql (15.3)
+Type "help" for help.
+
+postgres=# select * from test1;
+a |          b           |     c     
+---+----------------------+-----------
+1 | a                    | aaaaaaaaa
+2 | b                    | bbbbbbbbb
+3 | c                    | ccccccccc
+(3 rows)
+
+postgres=# show data_directory;
+data_directory
+----------------
+/mnt/data/15_1
+(1 row)
+
+postgres=#
 
 
