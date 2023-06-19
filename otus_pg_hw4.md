@@ -78,7 +78,7 @@ Latency (ms):
 min:                                  189.33
 avg:                                  228.12
 max:                                 1688.95
-95th percentile:                      292.60 - 95% запросов к БД имеют задержку меньше 292 ms
+95th percentile:                      292.60  # 95% запросов к БД имеют задержку меньше 292 ms
 sum:                              3000233.05
 
 Threads fairness:
@@ -86,7 +86,7 @@ events (avg/stddev):           2630.4000/49.80
 execution time (avg/stddev):   600.0466/0.06
 ```
 
-**Увеличили shared_buffers до 256**
+**Увеличить shared_buffers до 256**
 
 ```
 SQL statistics:
@@ -99,8 +99,7 @@ transactions:                        12893  (21.48 per sec.)
 queries:                             258040 (429.96 per sec.)
 ignored errors:                      10     (0.02 per sec.)
 reconnects:                          0      (0.00 per sec.)
-```
-```
+
 General statistics:
 total time:                          600.1497s
 total number of events:              12893
@@ -109,7 +108,7 @@ Latency (ms):
 min:                                  198.60
 avg:                                  232.69
 max:                                 1190.11
-95th percentile:                      314.45 - 95% запросов к БД имеют задержку меньше 314 ms - как то не очень
+95th percentile:                      314.45 # 95% запросов к БД имеют задержку меньше 314 ms - как то не очень
 sum:                              3000125.78
 
 Threads fairness:
@@ -117,7 +116,7 @@ events (avg/stddev):           2578.6000/16.33
 executi on time (avg/stddev):   600.0252/0.05
 ```
 
-**Увеличили maintenance_work_mem**
+**Увеличить maintenance_work_mem**
 
 ```
 postgres=# alter system set maintenance_work_mem='400MB';
@@ -149,7 +148,7 @@ Latency (ms):
 min:                                  190.51
 avg:                                  227.60
 max:                                  669.70
-95th percentile:                      282.25 - 95% запросов к БД имеют задержку меньше 282 ms - получше.
+95th percentile:                      282.25 # 95% запросов к БД имеют задержку меньше 282 ms - получше.
 sum:                              3000275.50
 
 Threads fairness:
@@ -157,7 +156,7 @@ events (avg/stddev):           2636.4000/54.24
 execution time (avg/stddev):   600.0551/0.06
 ```
 
-**Увеличили work_mem**
+**Увеличить work_mem**
 
 ```
 postgres=# show work_mem ;
@@ -195,7 +194,7 @@ Latency (ms):
 min:                                  189.60
 avg:                                  228.58
 max:                                  490.96
-95th percentile:                      262.64 - 95 % апросов к БД имеют задержку меньше 262 ms - получше.
+95th percentile:                      262.64 # 95 % апросов к БД имеют задержку меньше 262 ms - получше.
 sum:                              3000288.70
 
 Threads fairness:
@@ -205,7 +204,7 @@ execution time (avg/stddev):   600.0577/0.07
 uniadmin@localhost:~>
 ```
 
-**Восстановили значения по умолчанию**
+**Восстановить значения по умолчанию**
 
 ```
 SQL statistics:
@@ -227,7 +226,7 @@ Latency (ms):
 min:                                  199.34
 avg:                                  237.96
 max:                                 1457.64
-95th percentile:                      292.60  - 95 % апросов к БД имеют задержку меньше 292.60 ms
+95th percentile:                      292.60 # 95 % апросов к БД имеют задержку меньше 292.60 ms
 sum:                              3000261.39
 
 Threads fairness:
@@ -237,7 +236,7 @@ execution time (avg/stddev):   600.0523/0.06
 
 **Простое увеличение maintenance_work_mem для тестового сценария oltp.lua помогло а увеличение размера буфферного кэша - нет**
 
-**Перенесли wal на диск SSD**
+**Перенести pg_wal на диск SSD**
 
 ![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/877aab1c-6260-4893-af40-d1fc7972013a)
 
@@ -261,7 +260,7 @@ Latency (ms):
 min:                                  169.15
 avg:                                  209.93
 max:                                 1301.96
-95th percentile:                      248.83 - 95 % запросов к БД имеют задержку меньше 248,83 ms - пока самый лучший результат.
+95th percentile:                      248.83 # 95 % запросов к БД имеют задержку меньше 248,83 ms - пока самый лучший результат.
 sum:                              3000386.18
 
 Threads fairness:
@@ -311,8 +310,8 @@ descriptor.)
 
 Non-sync'ed 8kB writes:
         write                           1497591.807 ops/sec       1 usecs/op
-uniadmin@endor-shire-dz4:~> 
 
+uniadmin@endor-shire-dz4:~> 
 
 5 seconds per test
 O_DIRECT supported on this platform for open_datasync and open_sync.
@@ -377,7 +376,7 @@ Latency (ms):
 min:                                  165.92
 avg:                                  200.60
 max:                                 1223.78
-95th percentile:                      231.53 - Пока наилучшее значение на этом остановимся
+95th percentile:                      231.53 # Пока наилучшее значение на этом остановимся
 sum:                              3000338.08
 
 Threads fairness:
@@ -386,5 +385,43 @@ execution time (avg/stddev):   600.0676/0.06
 
 uniadmin@localhost:~>
 ```
+
+**Добавить вычислительные ресурсы**
+
+![image](https://github.com/Paddey/pg2023dzDPAV/assets/36312830/90d83966-438f-4a01-8b1a-eab2064da0b6)
+
+```
+SQL statistics:
+    queries performed:
+        read:                            209804
+        write:                           59908
+        other:                           29986
+        total:                           299698
+    transactions:                        14975  (24.95 per sec.)
+    queries:                             299698 (499.35 per sec.)
+    ignored errors:                      11     (0.02 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          600.1720s
+    total number of events:              14975
+
+Latency (ms):
+         min:                                  167.08
+         avg:                                  200.36
+         max:                                 1869.14
+         95th percentile:                      227.40 # Добавление ресурсов очень помогло
+         sum:                              3000384.53
+
+Threads fairness:
+    events (avg/stddev):           2995.0000/45.60
+    execution time (avg/stddev):   600.0769/0.05
+
+uniadmin@localhost:~>
+```
+
+
+
+
 
 
