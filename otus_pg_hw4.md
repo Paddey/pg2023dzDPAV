@@ -420,7 +420,99 @@ Threads fairness:
 uniadmin@localhost:~>
 ```
 
+**Повторно выполнить  sysbench**
 
+```
+SQL statistics:
+queries performed:
+read:                            203182
+write:                           58007
+other:                           29043
+total:                           290232
+transactions:                        14499  (24.16 per sec.)
+queries:                             290232 (483.59 per sec.)
+ignored errors:                      14     (0.02 per sec.)
+reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+total time:                          600.1635s
+total number of events:              14499
+
+Latency (ms):
+min:                                  176.08
+avg:                                  206.90
+max:                                  705.40
+95th percentile:                      223.34
+sum:                              2999888.50
+
+Threads fairness:
+events (avg/stddev):           2899.8000/75.08
+execution time (avg/stddev):   599.9777/0.06
+
+uniadmin@localhost:~>
+```
+
+**Установить random_page_cost 1.1 тк данные и wal расположены на SSD дисках**
+
+```
+SQL statistics:
+queries performed:
+read:                            198632
+write:                           56706
+other:                           28400
+total:                           283738
+transactions:                        14177  (23.62 per sec.)
+queries:                             283738 (472.76 per sec.)
+ignored errors:                      11     (0.02 per sec.)
+reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+total time:                          600.1669s
+total number of events:              14177
+
+Latency (ms):
+min:                                  175.49
+avg:                                  211.62
+max:                                 1332.97
+95th percentile:                      257.95
+sum:                              3000179.03
+
+Threads fairness:
+events (avg/stddev):           2835.4000/54.00
+execution time (avg/stddev):   600.0358/0.05
+```
+
+**Выполнить sysbench на хосте, где установлена СУБД**
+
+```
+SQL statistics:
+queries performed:
+read:                            5144916
+write:                           1465805
+other:                           737065
+total:                           7347786
+transactions:                        366449 (609.91 per sec.)
+queries:                             7347786 (12229.41 per sec.)
+ignored errors:                      1045   (1.74 per sec.)
+reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+total time:                          600.8271s
+total number of events:              366449
+
+Latency (ms):
+min:                                    2.17
+avg:                                    8.20
+max:                                 2096.86
+95th percentile:                       17.95 # Самая маленькая задержка
+sum:                              3003247.46
+
+Threads fairness:
+events (avg/stddev):           73289.8000/140.98
+execution time (avg/stddev):   600.6495/0.01
+
+uniadmin@endor-shire-dz4:~> 
+```
 
 
 
