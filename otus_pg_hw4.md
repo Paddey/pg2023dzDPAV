@@ -1,4 +1,4 @@
-## OTUS PostgreSQL Cloud Solutions ##
+## OTUS PostgreSQL Cloud Solutions. ##
 
 ### Домашняя работа 4 ###
 
