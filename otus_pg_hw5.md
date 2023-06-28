@@ -1,6 +1,6 @@
 ## OTUS PostgreSQL Cloud Solutions. ##
 
-### Домашняя работа 5. ###
+### Домашняя работа 5 ###
 
 **Сделать бэкап PostgreSQL используя pg_probackup и выполнить восстановление.**
 
