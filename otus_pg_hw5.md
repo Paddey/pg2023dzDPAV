@@ -1,8 +1,8 @@
-## OTUS PostgreSQL Cloud Solutions ##
+## OTUS PostgreSQL Cloud Solutions. ##
 
-### Домашняя работа 5 ###
+### Домашняя работа 5. ###
 
-**Сделать бэкап PostgreSQL используя pg_probackup и выполнить восстановление**
+**Сделать бэкап PostgreSQL используя pg_probackup и выполнить восстановление.**
 
 Инсталлировать PostgreSQL 14 и pg_probackup 14 во избежании ошибки несовместимости версий.
 Пакет rpm pg_probackup нужной версии загрузить c http://repo.postgrespro.ru/pg_probackup/rpm/2.5.8/
@@ -20,7 +20,7 @@ mkdir /home/uniadmin/backupDB
 pg_probackup-14 init -B /home/uniadmin/backupDB
 ``
 
-На клиенте настроить удалённый режим.
+**На клиенте настроить удалённый режим.**
 
 ``
 uniadmin@localhost:~>ssh-copy-id uniadmin@158.160.103.127
@@ -55,7 +55,7 @@ COMMIT;
 ```
 
  
-Добавить возможность резервного потокового копирования WAL (--stream).
+**Добавить возможность резервного потокового копирования WAL (--stream).**
 
 ```
 ALTER ROLE backup WITH REPLICATION;
@@ -75,7 +75,7 @@ Enter passphrase for key '/home/uniadmin/.ssh/id_rsa':
 INFO: Instance 'enshire' successfully inited
 ```
 
-На клиенте запустить резервное копирование.
+**На клиенте запустить резервное копирование.**
 
 ```
 uniadmin@localhost:~> pg_probackup-14 backup -B /home/uniadmin/backupDB --instance=enshire --backup-mode=FULL --comp
@@ -109,7 +109,7 @@ WARNING: Retention policy is not set
 uniadmin@localhost:~>
 ```
 
-Посмотреть статус резервного копирования.
+**Посмотреть статус резервного копирования.**
 
 ```
 uniadmin@localhost:~/backupDB/backups/enshire> pg_probackup-14 show -B /home/uniadmin/backupDB/
@@ -131,7 +131,7 @@ uniadmin@localhost:~/backupDB/backups/enshire>
 pg_probackup-14 set-config --instance enshire --retention-window=1 --retention-redundancy=2
 ``
 
-Создать таблицу для проверки создания полной копии.
+**Создать таблицу для проверки создания полной копии.**
 
 ```
 demo=# create table privileges (a serial, b char(1), c text);
@@ -155,7 +155,7 @@ demo=# \q
 uniadmin@localhost:/home> 
 ```
 
-Выполнить резервное копирование.
+**Выполнить резервное копирование.**
 
 ```
 pg_probackup-14 backup -B /home/uniadmin/backupDB --instance=enshire --backup-mode=FULL --comp
@@ -177,7 +177,7 @@ enshire   14       RWV4RD  ----                    FULL  STREAM    1/0     25s  
 uniadmin@localhost:~/backupDB/backups/enshire>
 ```
 
-Создать таблицу для проверки метода копирования DELTA.
+**Создать таблицу для проверки метода копирования DELTA.**
 
 ```
 uniadmin@localhost:/home> psql -d demo -h 158.160.103.127 -U uniadmin -W
@@ -208,7 +208,7 @@ a | b |      c
 demo=# \q
 ```
 
-Выполнить резервное копирование DELTA.
+**Выполнить резервное копирование DELTA, предварительно выполнив полный бэкап - Parent backup: RWV7V1.**
 
 ```
 uniadmin@localhost:/home> pg_probackup-14 backup -B /home/uniadmin/backupDB --instance=enshire --backup-mode=DELTA --compress --stream -
@@ -269,6 +269,107 @@ enshire   14       RWV515  ----                    FULL   STREAM    0/0     11s 
 enshire   14       RWV4RD  ----                    FULL   STREAM    1/0     25s       0     0    1.00  0/83000060  0/0         ERROR   
 uniadmin@localhost:/home>
 ```
+
+**Остановть сервис PostgreSQL и удалить $PGDATA. Восстановить один из бэкапов.**
+
+```
+uniadmin@localhost:~> pg_probackup-14 restore -B /home/uniadmin/backupDB/ --instance enshire --remote-user=postgres --remote-host=158.16
+0.103.127 --archive-user=backup -i RWV59E
+Enter passphrase for key '/home/uniadmin/.ssh/id_rsa': 
+INFO: Validating backup RWV59E
+INFO: Backup RWV59E data files are valid
+INFO: Backup RWV59E WAL segments are valid
+INFO: Backup RWV59E is valid.
+INFO: Restoring the database from backup at 2023-06-26 16:53:38+03
+INFO: Start restoring backup files. PGDATA size: 2681MB
+Enter passphrase for key '/home/uniadmin/.ssh/id_rsa': 
+INFO: Backup files are restored. Transfered bytes: 2673MB, time elapsed: 2m:3s
+INFO: Restore incremental ratio (less is better): 100% (2673MB/2681MB)
+INFO: Syncing restored files to disk
+Enter passphrase for key '/home/uniadmin/.ssh/id_rsa': 
+INFO: Restored backup files are synced, time elapsed: 39s
+INFO: Restore of backup RWV59E completed.
+```
+
+**Проверить таблицу privileges.**
+
+```
+postgres@endor-shire-dz5:/home/uniadmin> psql
+psql (14.8)
+Type "help" for help.
+
+postgres=# \c demo
+You are now connected to database "demo" as user "postgres".
+demo=# select * from privileges
+demo-# ;
+ a | b |      c
+---+---+-------------
+ 1 | A | INGIS MANIS
+ 2 | A | INGIS MANIS
+ 2 | D | LEOS MESSI
+(3 rows)
+
+demo=# select * from privileges3;
+ERROR:  relation "privileges3" does not exist  # Это в другом бэкапе.
+```
+
+**Восстановить DELTA backup предварительно остановив PostgreSQL и удалив $PGDATA.**
+
+```
+uniadmin@localhost:~> pg_probackup-14 restore -B /home/uniadmin/backupDB -i RWV8RQ  --instance enshire --remote-user=postgres --remote-h
+ost=158.160.110.47
+Enter passphrase for key '/home/uniadmin/.ssh/id_rsa': 
+INFO: Validating parents for backup RWV8RQ                # DELTA бэкап
+INFO: Validating backup RWV7V1                            # Родительский бэкап 
+INFO: Backup RWV7V1 data files are valid
+INFO: Validating backup RWV8RQ
+INFO: Backup RWV8RQ data files are valid
+INFO: Backup RWV8RQ WAL segments are valid
+INFO: Backup RWV8RQ is valid.
+INFO: Restoring the database from backup at 2023-06-26 18:09:26+03
+INFO: Start restoring backup files. PGDATA size: 2681MB
+Enter passphrase for key '/home/uniadmin/.ssh/id_rsa': 
+INFO: Backup files are restored. Transfered bytes: 2681MB, time elapsed: 2m:22s
+INFO: Restore incremental ratio (less is better): 100% (2681MB/2681MB)
+INFO: Syncing restored files to disk
+Enter passphrase for key '/home/uniadmin/.ssh/id_rsa': 
+INFO: Restored backup files are synced, time elapsed: 34s
+INFO: Restore of backup RWV8RQ completed.
+uniadmin@localhost:~> 
+```
+
+**Проверить наличие таблиц.**
+
+```
+uniadmin@endor-shire-dz5:~> sudo systemctl start postgresql
+uniadmin@endor-shire-dz5:~> sudo su postgres
+postgres@endor-shire-dz5:/home/uniadmin> psql
+psql (14.8)
+Type "help" for help.
+
+postgres=# \c demo
+You are now connected to database "demo" as user "postgres".
+demo=# select * from privileges;
+ a | b |      c
+---+---+-------------
+ 1 | A | INGIS MANIS
+ 2 | A | INGIS MANIS
+ 2 | D | LEOS MESSI
+(3 rows)
+
+demo=# select * from privileges3;
+ a | b |      c
+---+---+-------------
+ 1 | A | TEST TEST
+ 2 | B | TEST1 TEST1
+ 3 | D | TEST4 TEST4
+ 5 | D | TEST5 TEST4
+(4 rows)
+
+demo=#
+```
+
+
 
 
 
